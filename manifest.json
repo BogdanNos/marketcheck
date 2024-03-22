@@ -1,0 +1,29 @@
+{
+    "name": "MarketCheck",
+    "description": "Сравнение цен на разных маркетплейсах",
+    "version": "1.0",
+    "manifest_version": 3,
+    "permissions": ["activeTab", "scripting"],
+    "content_scripts": [
+      {
+        "matches": [
+          "https://megamarket.ru/catalog/details/*",
+          "https://www.ozon.ru/product/*",
+          "https://ozon.ru/product/*",
+          "https://www.wildberries.ru/catalog/*",
+          "https://wildberries.ru/catalog/*"
+        ],
+        "js": ["background.js"]
+      }
+    ],
+
+    "action": {
+        "default_icon": {
+          "32": "/images/icon32.png"
+        },
+        "default_popup": "popup.html"
+      },
+      "icons": {
+        "128": "/images/icon128.png"
+      }
+  }
