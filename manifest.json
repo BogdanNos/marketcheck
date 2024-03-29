@@ -1,29 +1,31 @@
 {
-    "name": "MarketCheck",
-    "description": "Сравнение цен на разных маркетплейсах",
-    "version": "1.0",
-    "manifest_version": 3,
-    "permissions": ["activeTab", "scripting"],
-    "content_scripts": [
-      {
-        "matches": [
-          "https://megamarket.ru/catalog/details/*",
-          "https://www.ozon.ru/product/*",
-          "https://ozon.ru/product/*",
-          "https://www.wildberries.ru/catalog/*",
-          "https://wildberries.ru/catalog/*"
-        ],
-        "js": ["background.js"]
-      }
-    ],
+  "name": "MarketCheck",
+  "description": "Сравнение цен на разных маркетплейсах",
+  "version": "1.1",
+  "manifest_version": 3,
+  "permissions": ["activeTab", "scripting"],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://megamarket.ru/*",
+        "https://www.ozon.ru/*",
+        "https://ozon.ru/*",
+        "https://www.wildberries.ru/*",
+        "https://wildberries.ru/*",
+        "https://market.yandex.ru/*",
+        "https://www.market.yandex.ru/*"
+      ],
+      "js": ["background.js"]
+    }
+  ],
 
-    "action": {
-        "default_icon": {
-          "32": "/images/icon32.png"
-        },
-        "default_popup": "popup.html"
+  "action": {
+      "default_icon": {
+        "32": "/images/icon32.png"
       },
-      "icons": {
-        "128": "/images/icon128.png"
-      }
-  }
+      "default_popup": "popup.html"
+    },
+    "icons": {
+      "128": "/images/icon128.png"
+    }
+}
