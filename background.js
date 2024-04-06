@@ -10,17 +10,13 @@ window.addEventListener("load", function(){
     if (currentUrl.includes(rule[domain]["tag"]) && currentUrl.includes(domain)){
         runExtension();
     }
-    else
-    {
+    else{
         setInterval(() => {
-            if (location.href !== currentUrl) 
-            {   
+            if (location.href !== currentUrl){   
                 currentUrl = location.href;
-
                 if (document.querySelector("#market-check-extension")){
                     document.getElementById("market-check-extension").remove();
                 }
-
                 if (currentUrl.includes(rule[domain]["tag"])){
                     console.log("PREANADNSDNAS");
                     runExtension();
@@ -30,15 +26,29 @@ window.addEventListener("load", function(){
     }
 });
 
+
 function runExtension(){
     const body = document.body;
     const location = window.location.href;
     let name = "";
+    
     if (location.includes(domain) && location.includes(rule[domain]["tag"])){
         isRunning = true;
         onElementAvailable(rule[domain]["selector"], () => {
             name = document.querySelector(rule[domain]["selector"]).textContent;
-            body.insertAdjacentHTML('afterbegin', generateHtml(name));
+            console.log(name)
+            let sorting = "price" //price popular;
+            let url = `https://192.168.0.111:5000/get_item?product_name=${name.replaceAll('"','')}&sorting=${sorting}`;
+            //window.open(url, '_blank');
+            fetch(url).then(function(response) {
+                return response.json();
+            }).then((data) => {
+                console.log(data)
+                body.insertAdjacentHTML('afterbegin', generateHtml(name, data));
+            }).catch((e) => {
+                console.log('Error: ' + e.message);
+                console.log(e.response);
+            })
         });
     }
 }
@@ -55,6 +65,12 @@ function onElementAvailable(selector, callback) {
 }
 function getStyles(){
     return `
+    #market-check-extension * {
+	padding: 0px;
+	margin: 0px;
+	border: none;
+    }
+
     #market-check-extension {
         background-color:white;
         width: 400px;
@@ -120,37 +136,63 @@ function getStyles(){
     }
     .form_toggle .item-2 input[type=radio]:checked + label {
         background: #D9D9D9;
-    }  
-      
+    }   
     `
 }
-function generateHtml(name){
-    style = getStyles()
-    return `
-    <style>
-    ${style}
-    </style>
-    <div id="market-check-extension">
-        <header>
-            <h1>МАРКЕТЧЕК</h1>
-            <button></button>
-        </header>
-        <main >
-            <section class="best-offers">
-                <h2>${name}</h2>
-                <h2>Лучшие предложения</h2>
-                <div class="form_toggle">
-                    <div class="form_toggle-item item-1">
-                        <input id="fid-1" type="radio" name="radio"  checked>
-                        <label for="fid-1">По возрастанию</label>
+function generateBlock(data){
+    let marketplace = data.name;
+    let items = data.items;
+    let list = "";
+    items.forEach(item => {
+        list += `
+            <div class="item">
+                <img height="50px" src="${item.image}" alt="${item.name}">
+                <h3>${item.name}</h3>
+                <p>${item.price}</p>
+                <a href="${item.url}" target="_blank">Подробнее</a>
+            </div>`;
+    });
+    return `<h1>${marketplace}</h1>
+                ${list}`
+}
+function generateHtml(name, data) {
+    let style = getStyles();
+    let blocks = "";
+    
+    data.forEach(marketplace => {
+        if (marketplace == -1)
+            console.log("Error");
+        blocks += `${generateBlock(marketplace)}`
+    });
+
+    let html = `
+        <style>
+            ${style}
+        </style>
+        <div id="market-check-extension">
+            <header>
+                <h1>МАРКЕТЧЕК</h1>
+                <button></button>
+            </header>
+            <main>
+                <section class="best-offers">
+                    <h2>${name}</h2>
+                    <h2>Лучшие предложения</h2>
+                    <div class="form_toggle">
+                        <div class="form_toggle-item item-1">
+                            <input id="fid-1" type="radio" name="radio" checked>
+                            <label for="fid-1">По возрастанию</label>
+                        </div>
+                        <div class="form_toggle-item item-2">
+                            <input id="fid-2" type="radio" name="radio">
+                            <label for="fid-2">По популярности</label>
+                        </div>
                     </div>
-                    <div class="form_toggle-item item-2">
-                        <input id="fid-2" type="radio" name="radio">
-                        <label for="fid-2">По популярности</label>
+                    <div class="items-container">
+                    ${blocks}
                     </div>
-                </div>
-            </section>
-        </main>
-    </div>
-    `
+                </section>
+            </main>
+        </div>`;
+    return html;
 }
