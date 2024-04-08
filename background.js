@@ -37,31 +37,61 @@ function runExtension(){
         onElementAvailable(rule[domain]["selector"], () => {
             name = document.querySelector(rule[domain]["selector"]).textContent;
             console.log(name)
-            let sorting = "price" //price popular;
-            let url = `https://192.168.0.111:5000/get_item?product_name=${name.replaceAll('"','')}&sorting=${sorting}`;
-            //window.open(url, '_blank');
-            fetch(url).then(function(response) {
-                return response.json();
-            }).then((data) => {
-                console.log(data)
-                body.insertAdjacentHTML('afterbegin', generateHtml(name, data));
-            }).catch((e) => {
-                console.log('Error: ' + e.message);
-                console.log(e.response);
+            let sortingByPrice = "price" //price popular;
+            let sortingByPopular = "popular"
+            let urlPrice = `https://192.168.0.111:5000/get_item?product_name=${name.replaceAll('"','')}&sorting=${sortingByPrice}`;
+            let urlPopular = `https://192.168.0.111:5000/get_item?product_name=${name.replaceAll('"','')}&sorting=${sortingByPopular}`;
+            //w1indow.open(url, '_blank');
+            Promise.all([
+                fetch(urlPrice).then(response => response.json()),
+                fetch(urlPopular).then(response => response.json())
+            ])
+            .then((data) => {
+                // Оба запроса завершены, данные доступны
+                
+            
+                // Создаем HTML после получения данных
+                // body.insertAdjacentHTML('afterbegin', generateHtml(name, data1));
+                body.insertAdjacentHTML('afterbegin', generateHtml(name, data[0], data[1]));
+                
             })
+            .catch(error => {
+                // Обработка ошибок при fetch запросах
+                console.error('Error during fetch requests:', error);
+            });
+            
         });
+        onElementAvailable('div[class="items-container"]', () => {
+            const radioButtons = document.querySelectorAll('input[type="radio"][name="radio"]');
+            const itemsContainers = document.querySelectorAll('div[class="items-container"]');
+            radioButtons.forEach((radioButton, index) => {
+                radioButton.addEventListener('change', function() {
+                    // Скрываем все контейнеры
+                    itemsContainers.forEach(container => container.style.display = 'none');
+                    
+                    // Определяем индекс выбранной радио-кнопки
+                    const selectedIndex = Array.from(radioButtons).indexOf(this);
+                    
+                    // Отображаем соответствующий контейнер
+                    itemsContainers[selectedIndex].style.display = 'block';
+                });
+            });
+        });
+
     }
 }
 
 //Функция ожидания загрузки элемента
 function onElementAvailable(selector, callback) {
     const observer = new MutationObserver(mutations => {
+         
       if (document.querySelector(selector)) {
         observer.disconnect();
         callback();
       }
     });
     observer.observe(document.body, { childList: true, subtree: true });
+
 }
 function getStyles(){
     return `
@@ -137,6 +167,9 @@ function getStyles(){
     .form_toggle .item-2 input[type=radio]:checked + label {
         background: #D9D9D9;
     }   
+    #price-list{
+        display: none;
+    }
     `
 }
 function generateBlock(data){
@@ -155,16 +188,23 @@ function generateBlock(data){
     return `<h1>${marketplace}</h1>
                 ${list}`
 }
-function generateHtml(name, data) {
+function generateHtml(name, data1,data2) {
     let style = getStyles();
-    let blocks = "";
-    
-    data.forEach(marketplace => {
+    let blocksPrice = "";
+    let blocksPopular = "";
+   
+    data1.forEach(marketplace => {
         if (marketplace == -1)
             console.log("Error");
-        blocks += `${generateBlock(marketplace)}`
+            blocksPrice += `${generateBlock(marketplace)}`
     });
 
+    data2.forEach(marketplace => {
+        if (marketplace == -1)
+            console.log("Error");
+            blocksPopular += `${generateBlock(marketplace)}`
+    });
+    
     let html = `
         <style>
             ${style}
@@ -180,19 +220,27 @@ function generateHtml(name, data) {
                     <h2>Лучшие предложения</h2>
                     <div class="form_toggle">
                         <div class="form_toggle-item item-1">
-                            <input id="fid-1" type="radio" name="radio" checked>
-                            <label for="fid-1">По возрастанию</label>
+                            <input id="fid-price" type="radio" name="radio" checked>
+                            <label for="fid-price">По возрастанию</label>
                         </div>
                         <div class="form_toggle-item item-2">
-                            <input id="fid-2" type="radio" name="radio">
-                            <label for="fid-2">По популярности</label>
+                            <input id="fid-popular" type="radio" name="radio">
+                            <label for="fid-popular">По популярности</label>
                         </div>
                     </div>
-                    <div class="items-container">
-                    ${blocks}
+                    <div class="items-container" id = "popular-list">
+                    ${blocksPrice}
+                    </div>
+                    <div class="items-container" id = "price-list" >
+                    ${blocksPopular}
                     </div>
                 </section>
             </main>
-        </div>`;
+            
+        </div>
+        `;
+    
     return html;
 }
+
+
