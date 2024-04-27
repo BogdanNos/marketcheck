@@ -7,7 +7,7 @@
   "declarativeNetRequest",
   "contextMenus"],
   "host_permissions": [
-    "https://192.168.0.111:5000/*"
+    "https://127.0.0.1:5000/*","https://192.168.0.107:5000/*"
   ],
   "content_scripts": [
     {
@@ -20,7 +20,7 @@
         "https://market.yandex.ru/*",
         "https://www.market.yandex.ru/*"
       ],
-      "js": ["background.js"]
+      "js": ["components/header.js","components/buttonsRadio.js","components/listProducts.js","html.js","background.js", "components/closed.js"]
     }
   ],
 

@@ -6,25 +6,122 @@ let rule = {"wildberries.ru" : {"tag" : "detail", "selector" : 'h1[class="produc
             "market.yandex.ru" : {"tag" : "product", "selector" : 'h1[data-additional-zone="title"]'}};
 let domain = window.location.hostname.replace("www.","");
 
+function dragElement(elmnt) {
+    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    if (document.getElementById("markethead")) {
+      // if present, the header is where you move the DIV from:
+      document.getElementById("markethead").onmousedown = dragMouseDown;
+    } else {
+      // otherwise, move the DIV from anywhere inside the DIV:
+      elmnt.onmousedown = dragMouseDown;
+    }
+  
+    function dragMouseDown(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // get the mouse cursor position at startup:
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      document.onmouseup = closeDragElement;
+      // call a function whenever the cursor moves:
+      document.onmousemove = elementDrag;
+    }
+  
+    function elementDrag(e) {
+      e = e || window.event;
+      e.preventDefault();
+      // calculate the new cursor position:
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
+      // set the element's new position:
+      elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+      elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+    }
+  
+    function closeDragElement() {
+      // stop moving when mouse button is released:
+      document.onmouseup = null;
+      document.onmousemove = null;
+    }
+  }
+
+function enable_closed(){
+    document.getElementById("market-check-extension-closed").style.display = "flex";
+    document.getElementById("market-check-extension").style.display = "None";
+    //document.getElementById("market-check-extension-rolled");
+}
+
+function enable_full(){
+    document.getElementById("market-check-extension-closed").style.display = "None";
+    document.getElementById("market-check-extension").style.display = "block";
+    //document.getElementById("market-check-extension-rolled");
+}
+
+function enable_rolled(){
+    document.getElementById("market-check-extension-closed").style.display = "None";
+    document.getElementById("market-check-extension").style.display = "None";
+    //document.getElementById("market-check-extension-rolled");
+}
+function enableHover(){
+let extra_8648921892381 = document.querySelector('.marketplace-closed-extended');
+let more_8216481 = document.querySelector('#market-check-extension-closed');
+//let mplace1 = document.getElementsByClassName('marketplace-closed-extra')[0];
+//let mplace2 = document.getElementsByClassName('marketplace-closed-extra')[1];
+more_8216481.addEventListener('mouseenter', function() {
+    extra_8648921892381.style.display = 'Block';
+    //extra.style.opacity = 1;
+});
+more_8216481.addEventListener('mouseleave', function() {
+    extra_8648921892381.style.display = 'None';
+    //extra.style.opacity = 0;
+
+});
+}
 window.addEventListener("load", function(){
+    console.log(currentUrl);
+    runExtension();
+    window.navigation.addEventListener("navigate", (event) => {
+        console.log(currentUrl);
+        if (location.href !== currentUrl){   
+            currentUrl = location.href;
+            if (document.querySelector("#market-check-extension") || document.querySelector("#market-check-extension-closed")){
+                document.getElementById("market-check-extension").remove();
+                document.getElementById("market-check-extension-closed").remove();
+            }
+            if (currentUrl.includes(rule[domain]["tag"])){
+                console.log("PREANADNSDNAS");
+                runExtension();
+            } 
+        }
+    })
+});
+/*window.addEventListener("load", function(){
+    console.log(currentUrl);
     if (currentUrl.includes(rule[domain]["tag"]) && currentUrl.includes(domain)){
         runExtension();
     }
     else{
-        setInterval(() => {
+        window.navigation.addEventListener("navigate", (event) => {
+            console.log(currentUrl);
             if (location.href !== currentUrl){   
                 currentUrl = location.href;
-                if (document.querySelector("#market-check-extension")){
+                if (document.querySelector("#market-check-extension") || document.querySelector("#market-check-extension-closed")){
                     document.getElementById("market-check-extension").remove();
+                    document.getElementById("market-check-extension-closed").remove();
                 }
                 if (currentUrl.includes(rule[domain]["tag"])){
                     console.log("PREANADNSDNAS");
                     runExtension();
                 } 
             }
-        }, 500);
+        })
+        //setInterval(() => {
+            
+        //}, 500);
     }
-});
+});*/
 
 
 function runExtension(){
@@ -37,31 +134,36 @@ function runExtension(){
         onElementAvailable(rule[domain]["selector"], () => {
             name = document.querySelector(rule[domain]["selector"]).textContent;
             console.log(name)
-            let sortingByPrice = "price" //price popular;
-            let sortingByPopular = "popular"
-            let urlPrice = `https://192.168.0.111:5000/get_item?product_name=${name.replaceAll('"','')}&sorting=${sortingByPrice}`;
-            let urlPopular = `https://192.168.0.111:5000/get_item?product_name=${name.replaceAll('"','')}&sorting=${sortingByPopular}`;
+       
+            //let url = `https://127.0.0.1:5000/get_item?product_name=${name.replaceAll('"','')}`;
+            let url = `https://192.168.0.107:5000/test`;
             //w1indow.open(url, '_blank');
-            Promise.all([
-                fetch(urlPrice).then(response => response.json()),
-                fetch(urlPopular).then(response => response.json())
-            ])
-            .then((data) => {
-                // Оба запроса завершены, данные доступны
-                
-            
-                // Создаем HTML после получения данных
-                // body.insertAdjacentHTML('afterbegin', generateHtml(name, data1));
-                body.insertAdjacentHTML('afterbegin', generateHtml(name, data[0], data[1]));
-                
+
+            fetch(url).then(function(response) {
+                console.log(response)
+                return response.json();
+            }).then((data) => {
+                console.log(data)
+                body.insertAdjacentHTML('afterbegin', CreateWebPage(data));
+                body.insertAdjacentHTML('afterbegin', Closed);
+                //body.insertAdjacentHTML('afterbegin', generateHtml(name, data));
+            }).catch((e) => {
+                console.error('Error: ' + e.message);
+                console.log(e.response);
             })
-            .catch(error => {
-                // Обработка ошибок при fetch запросах
-                console.error('Error during fetch requests:', error);
-            });
             
         });
-        onElementAvailable('div[class="items-container"]', () => {
+        onElementAvailable('div[id="market-check-extension"]', () => {
+            document.getElementById("closeModal").onclick = function(){
+                enable_closed();
+            }
+        
+            document.getElementById("market-check-extension-closed").onclick = function(){
+                enable_full();
+            }
+            enableHover();
+            dragElement(document.getElementById("market-check-extension"));
+
             const radioButtons = document.querySelectorAll('input[type="radio"][name="radio"]');
             const itemsContainers = document.querySelectorAll('div[class="items-container"]');
             radioButtons.forEach((radioButton, index) => {
@@ -93,116 +195,24 @@ function onElementAvailable(selector, callback) {
     observer.observe(document.body, { childList: true, subtree: true });
 
 }
-function getStyles(){
-    return `
-    #market-check-extension * {
-	padding: 0px;
-	margin: 0px;
-	border: none;
-    }
 
-    #market-check-extension {
-        background-color:white;
-        width: 400px;
-        
-        z-index:999999;
-        position:fixed;
-        right:0; 
-    }
 
-    #market-check-extension header{
-        display: flex;
-        justify-content: space-between;
-        padding: 5px 40px 5px 40px;
-        background-color:#058ED9
-    }
 
-    #market-check-extension main{
-        padding-left:40px;
-        padding-right:40px;
-    }
-
-    #market-check-extension header h1 {
-        font-family: 'Roboto';
-        font-weight: bold;
-        font-size: 20px;
-      }
-    #market-check-extension main h2 {
-        font-family: 'Roboto';
-        font-size: 14px;
-      }
-    
-    .form_toggle {
-        display: inline-block;
-        overflow: hidden;
-    }
-    .form_toggle-item {
-        float: left;
-        display: inline-block;
-    }
-    .form_toggle-item input[type=radio] {
-        display: none;
-    }
-    .form_toggle-item label {
-        display: inline-block;
-        padding: 0px 15px;   
-        line-height: 34px;    
-        border: 1px solid #999;
-        border-right: none;
-        cursor: pointer;
-        user-select: none;   
-    }
-     
-    .form_toggle .item-1 label {
-        border-radius: 6px 0 0 6px;
-    }
-    .form_toggle .item-2 label {
-        border-radius: 0 6px 6px 0;
-        border-right: 1px solid #999;
-    }
-     
-    .form_toggle .item-1 input[type=radio]:checked + label {
-        background: #D9D9D9;
-    }
-    .form_toggle .item-2 input[type=radio]:checked + label {
-        background: #D9D9D9;
-    }   
-    #price-list{
-        display: none;
-    }
-    `
-}
-function generateBlock(data){
-    let marketplace = data.name;
-    let items = data.items;
-    let list = "";
-    items.forEach(item => {
-        list += `
-            <div class="item">
-                <img height="50px" src="${item.image}" alt="${item.name}">
-                <h3>${item.name}</h3>
-                <p>${item.price}</p>
-                <a href="${item.url}" target="_blank">Подробнее</a>
-            </div>`;
-    });
-    return `<h1>${marketplace}</h1>
-                ${list}`
-}
-function generateHtml(name, data1,data2) {
+function generateHtml(name, data1, data2) {
     let style = getStyles();
-    let blocksPrice = "";
-    let blocksPopular = "";
-   
+    let blocksPrice = "Price_content";
+    let blocksPopular = "Poppular content";
+    
     data1.forEach(marketplace => {
         if (marketplace == -1)
             console.log("Error");
-            blocksPrice += `${generateBlock(marketplace)}`
+         blocksPrice += `${generateBlock(marketplace)}`
     });
 
     data2.forEach(marketplace => {
         if (marketplace == -1)
             console.log("Error");
-            blocksPopular += `${generateBlock(marketplace)}`
+        blocksPopular += `${generateBlock(marketplace)}`
     });
     
     let html = `
@@ -212,7 +222,7 @@ function generateHtml(name, data1,data2) {
         <div id="market-check-extension">
             <header>
                 <h1>МАРКЕТЧЕК</h1>
-                <button></button>
+                <div class="closeModal"></div>
             </header>
             <main>
                 <section class="best-offers">
