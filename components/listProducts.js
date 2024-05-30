@@ -129,27 +129,14 @@ listProductsStyles=`
   }
 `
 
-function GetMPImage(name){
-  console.log(name);
-  switch(name) {
-    case 'megamarket':
-      return 'https://i.postimg.cc/SK6xKjqS/e-Zoe-Heox-Ou-Q.jpg'
-    case "wildberries":
-      return "https://i.postimg.cc/hvqwtPDB/Coy-DKec-S6g-M.jpg"
-    case 'ozon':
-      return "https://i.postimg.cc/3rgVbp1J/ozon-transformed.jpg"  
-    case 'yandex':
-      return  "https://i.postimg.cc/VLgTz82x/4y-Fk-R24-Im-K0.jpg"
-    default:
-        console.log('Invalid selection');
-  }
-}
+
 
 function CreateListProducts(items,nameMarketplace) {
+  var minPriceItem = items.reduce((min, item) => item.price < min.price ? item : min, items[0]);
   let listProducts = `
       <div class = "marketplace">
         <div class = "marketText">
-            <h2>от 180р</h2> 
+            <h2>от  ${minPriceItem.price} ${formatPrice(minPriceItem.price)}</h2> 
             <a class="list_button button_market" href="#" target="_blank">Подробнее<svg width="6" height="9" viewBox="0 0 6 9" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0.333313 0.5H2.86664L5.93331 4.5L2.86664 8.5H0.333313L3.39998 4.5L0.333313 0.5Z" fill="black"/>
             </svg>
@@ -169,7 +156,7 @@ function CreateListProducts(items,nameMarketplace) {
               </div>
               <div class="prod_info">
                 <h3>${item.name.substring(0, 50)}</h3>
-              <a class="list_button button_product" href="${item.url}" target="_blank">${item.price}    <svg width="6" height="9" viewBox="0 0 6 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <a class="list_button button_product" href="${item.url}" target="_blank">${item.price} ${formatPrice(item.price)}    <svg width="6" height="9" viewBox="0 0 6 9" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M0.333313 0.5H2.86664L5.93331 4.5L2.86664 8.5H0.333313L3.39998 4.5L0.333313 0.5Z" fill="black"/>
               </svg>
               \</a>

@@ -5,6 +5,36 @@ let rule = {"wildberries.ru" : {"tag" : "detail", "selector" : 'h1[class="produc
             "ozon.ru" : {"tag" : "product", "selector" : 'div[data-widget="webProductHeading"]'},
             "market.yandex.ru" : {"tag" : "product", "selector" : 'h1[data-additional-zone="title"]'}};
 let domain = window.location.hostname.replace("www.","");
+function GetMPImage(name){
+    switch(name) {
+      case 'megamarket':
+        return 'https://i.postimg.cc/SK6xKjqS/e-Zoe-Heox-Ou-Q.jpg'
+      case "wildberries":
+        return "https://i.postimg.cc/hvqwtPDB/Coy-DKec-S6g-M.jpg"
+      case 'ozon':
+        return "https://i.postimg.cc/3rgVbp1J/ozon-transformed.jpg"  
+      case 'yandex':
+        return  "https://i.postimg.cc/VLgTz82x/4y-Fk-R24-Im-K0.jpg"
+      default:
+          console.log('Invalid selection');
+    }
+  }
+
+  function formatPrice(number) {
+    number=parseInt(number);
+    const lastDigit = number % 10;
+    const lastTwoDigits = number % 100;
+
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+        return 'рублей';
+    } else if (lastDigit === 1) {
+        return 'рубль';
+    } else if (lastDigit >= 2 && lastDigit <= 4) {
+        return 'рубля';
+    } else {
+        return 'рублей';
+    }
+}
 
 function dragElement(elmnt) {
     var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
@@ -135,8 +165,8 @@ function runExtension(){
             name = document.querySelector(rule[domain]["selector"]).textContent;
             console.log(name)
        
-            //let url = `https://127.0.0.1:5000/get_item?product_name=${name.replaceAll('"','')}`;
-            let url = `https://192.168.0.107:5000/test`;
+            let url = `https://192.168.0.112:5000/get_item?product_name=${name.replaceAll('"','')}`;
+            //let url = `https://192.168.0.107:5000/test`;
             //w1indow.open(url, '_blank');
 
             fetch(url).then(function(response) {
@@ -144,8 +174,23 @@ function runExtension(){
                 return response.json();
             }).then((data) => {
                 console.log(data)
-                body.insertAdjacentHTML('afterbegin', CreateWebPage(data));
-                body.insertAdjacentHTML('afterbegin', Closed);
+                var dataFilter=JSON.parse(JSON.stringify(data));
+
+                for (let i = 3; i >= 0; i--) {
+                    var item = data.popular[i];
+                    if (location.includes(item.name) || item.items.length===0){
+                        dataFilter.popular.splice(i, 1);
+                    }
+                    item = data.price[i];
+                    if (location.includes(item.name) || item.items.length==0){ 
+                        dataFilter.price.splice(i, 1);
+                    }
+                
+                }
+
+                console.log(dataFilter)
+                body.insertAdjacentHTML('afterbegin', CreateWebPage(dataFilter));
+                body.insertAdjacentHTML('afterbegin', CreateClosePage(data.best["price"], data.best["popular"]));
                 //body.insertAdjacentHTML('afterbegin', generateHtml(name, data));
             }).catch((e) => {
                 console.error('Error: ' + e.message);
