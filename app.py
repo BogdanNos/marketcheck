@@ -4,6 +4,7 @@ import asyncio
 from threading import Thread
 import parser
 import json 
+from celery import Celery
 app = Flask(__name__)
 cors = CORS(app)
 
@@ -23,7 +24,9 @@ def get_item():
     #token = request.args.get("token")
     #if token != TOKEN:
     #    return "token error"
-    response = jsonify(parser.handle_request(product))
+    response = parser.handle_request(product)
+    print(response)
+    response = jsonify(response)
     #response = jsonify({"popular" : [{"name": "megamarket", "items": [], "sorting": "popular"}, {"name": "yandex", "items": [], "sorting": "popular"}, {"name": "wildberries", "items": [], "sorting": "popular"}, {"name": "ozon", "items": [], "sorting": "popular"}],
 #"price" : [{"name": "megamarket", "items": [], "sorting": "price"}, {"name": "yandex", "items": [], "sorting": "price"}, {"name": "wildberries", "items": [], "sorting": "price"}, {"name": "ozon", "items": [], "sorting": "price"}]})
     #response.headers.add('Access-Control-Allow-Origin', '*')
