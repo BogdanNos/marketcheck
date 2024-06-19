@@ -131,13 +131,14 @@ listProductsStyles=`
 
 
 
-function CreateListProducts(items,nameMarketplace) {
+function CreateListProducts(items,nameMarketplace,searchUrl) {
+  console.log(searchUrl);
   var minPriceItem = items.reduce((min, item) => item.price < min.price ? item : min, items[0]);
   let listProducts = `
       <div class = "marketplace">
         <div class = "marketText">
             <h2>от  ${minPriceItem.price} ${formatPrice(minPriceItem.price)}</h2> 
-            <a class="list_button button_market" href="#" target="_blank">Подробнее<svg width="6" height="9" viewBox="0 0 6 9" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <a class="list_button button_market" href="${searchUrl}" target="_blank">Подробнее<svg width="6" height="9" viewBox="0 0 6 9" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0.333313 0.5H2.86664L5.93331 4.5L2.86664 8.5H0.333313L3.39998 4.5L0.333313 0.5Z" fill="black"/>
             </svg>
             \</a>
@@ -164,12 +165,12 @@ function CreateListProducts(items,nameMarketplace) {
               
           </div>`;
   });
-  listProducts+= '<a class="more_market" href="#" target="_blank"> \
+  listProducts+= `<a class="more_market" href="${searchUrl}" target="_blank"> \
   <div class="more_arrow"></div>\
   <h1>Больше предложений</h1>\
   <svg class="more_arrow" width="21" height="18" viewBox="0 0 21 18" fill="none" xmlns="http://www.w3.org/2000/svg">\
   <path d="M20.2 9L13.7 18H10.2L15.7 10.5H0V7.5H15.7L10.2 0H13.7L20.2 9Z" fill="white"/>\
   </svg>\
-  </a>'
+  </a>`
   return listProducts
 }

@@ -1,8 +1,8 @@
 ClosedStyle = 
-`<div id="market-check-extension-closed">   
+`
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
-    #market-check-extension-closed{
+    .market-check-extension-closed{
         font-family: "Roboto";
         width: 380px;
         background-color: #050C4D;
@@ -105,6 +105,25 @@ ClosedStyle =
     .marketplace-closed-extra div a:hover{
         background-color: rgb(200, 200, 200);
     }
+    .loader {
+        width: 48px;
+        height: 48px;
+        border: 5px solid #FFF;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        margin:auto;
+        box-sizing: border-box;
+        animation: rotation 1s linear infinite;
+        }
+    
+        @keyframes rotation {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    } 
 
 </style>
 `
@@ -112,6 +131,7 @@ function CreateClosePage(priceItem,popularItem) {
     Closed=
     
     `
+    <div id="market-check-extension-closed" class="market-check-extension-closed">   
     ${ClosedStyle}
     <div class="marketplace-closed-extended">
         <h2>Лучшие предложения</h2>
@@ -129,7 +149,7 @@ function CreateClosePage(priceItem,popularItem) {
                 <h1>
                     По возрастанию
                 </h1>
-                <a href="${priceItem.url}">от ${priceItem.price} рублей</a>
+                <a href="${priceItem.url}">от ${priceItem.price} ${formatPrice(priceItem.price)}</a>
             </div>
             <img width="100" height="100" src="${GetMPImage(priceItem.marketplace)}"></img>
         </div>
@@ -144,6 +164,28 @@ function CreateClosePage(priceItem,popularItem) {
         <svg xmlns="http://www.w3.org/2000/svg" style="color: white;" x="0px" y="0px" width="100" height="100" viewBox="0 0 50 50">
         <path d="M 21 3 C 11.6 3 4 10.6 4 20 C 4 29.4 11.6 37 21 37 C 24.354553 37 27.47104 36.01984 30.103516 34.347656 L 42.378906 46.621094 L 46.621094 42.378906 L 34.523438 30.279297 C 36.695733 27.423994 38 23.870646 38 20 C 38 10.6 30.4 3 21 3 z M 21 7 C 28.2 7 34 12.8 34 20 C 34 27.2 28.2 33 21 33 C 13.8 33 8 27.2 8 20 C 8 12.8 13.8 7 21 7 z"></path>
         </svg>
+    </div>
+    <script> 
+    </script>
+    </div>
+    `;
+    return Closed;
+}
+
+function CreateLoadPage() {
+    Closed=
+    
+    `
+    <div id="market-check-extension-loading" class="market-check-extension-closed">   
+    ${ClosedStyle}
+    <div class="show-more-closed">
+        <div>
+            <h1>
+                Предложения на других маркетплейсах
+            </h1>
+            <p>Нажмите чтобы посмотреть</p>
+        </div>
+        <span class="loader"></span>
     </div>
     <script> 
     </script>
