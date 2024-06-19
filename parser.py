@@ -57,6 +57,35 @@ driver.switch_to.window(driver.window_handles[3])
 driver.get("https://market.yandex.ru/")
 marketplaces["yandexmarket"] = driver.current_window_handle
 
+from threading import Thread
+import functools
+
+def timeout(seconds_before_timeout):
+    def deco(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            res = [Exception('function [%s] timeout [%s seconds] exceeded!' % (func.__name__, seconds_before_timeout))]
+            def newFunc():
+                try:
+                    res[0] = func(*args, **kwargs)
+                except Exception as e:
+                    res[0] = e
+            t = Thread(target=newFunc)
+            t.daemon = True
+            try:
+                t.start()
+                t.join(seconds_before_timeout)
+            except Exception as e:
+                print(e)
+                print('error starting thread')
+                raise e
+            ret = res[0]
+            if isinstance(ret, BaseException):
+                raise ret
+            return ret
+        return wrapper
+    return deco
+
 def get_items_ozon(product_name, sort = "popular"):
     sorting = "score"
     if sort == "price":
@@ -123,7 +152,7 @@ def get_items_ozon(product_name, sort = "popular"):
             storage = driver.execute_script("return window.localStorage;")
         response = storage[f"ozon_result_{hash}"]
     return response, url
-
+@timeout(5)
 def handle_ozon(product_name, sorting):
     #привод к общему виду
     itemsRuled = []
@@ -201,8 +230,7 @@ def get_items_megamarket(product_name, sort="popular"):
     items = storage[f"megamarket_result_{hash}"]
     items = json.loads(items)
     return url, items
-
-
+@timeout(5)
 def handle_megamarket(product_name, sorting):
     # привод к общему виду
     itemsRuled = []
@@ -226,7 +254,6 @@ def handle_megamarket(product_name, sorting):
                 break
     return {"name": "megamarket", "items": itemsRuled, "sorting": sorting, "search_url": url}
 
-
 def get_items_yandex(product_name, sort="popular"):
     if sort == "popular":
         url = f"https://market.yandex.ru/search?text={product_name}"
@@ -243,9 +270,7 @@ def get_items_yandex(product_name, sort="popular"):
         print(e)
         return url, []
 
-    
-
-
+@timeout(5)    
 def handle_yandex(product_name, sorting):
     # привод к общему виду
     url, items = get_items_yandex(product_name, sorting)
@@ -268,7 +293,6 @@ def handle_yandex(product_name, sorting):
             if g >= len(items) - 1:
                 break
     return {"name": "yandex", "items": itemsRuled, "sorting": sorting, "search_url": url}
-
 
 def get_items_wildberries(product_name, sort = "popular"):
     sorting = 'popular'
@@ -305,8 +329,7 @@ def get_items_wildberries(product_name, sort = "popular"):
     items = storage[f"wildberries_result_{hash}"]
     items = json.loads(items)
     return url, items
-
-
+@timeout(5)    
 def handle_wildberries(product_name, sorting):
     def get_basket(id):
         vol = id // 100000
@@ -377,7 +400,7 @@ def searchBest(bigItem, sorting):
     for items in bigItem:
         for item in items['items']:
             price = item['price']
-            print(price)
+            #print(price)
             if(price < pricemin):
                 marketplace = items['name']
                 url = items['search_url']
@@ -426,12 +449,14 @@ def handle_request(product_name):
                 itemsPopular.append(handle_ozon(product_name, "popular"))
             except:
                 itemsPopular.append({"name" : "ozon", "items" : [], "sorting" : "popular"})
+    try:
+        temp = searchBest(itemsPrice, 'price')
+        temp.update(searchBest(itemsPopular, 'popular'))
+    except:
+        pass
 
-    best.append(searchBest(itemsPrice, 'price'))
-    best.append(searchBest(itemsPopular, 'popular'))
 
-
-    return {"popular": itemsPopular, "price": itemsPrice, "best": best}
+    return {"popular": itemsPopular, "price": itemsPrice, "best": temp}
 
 def refresh(marketplace):
     driver.switch_to.window(marketplaces[marketplace])
@@ -455,7 +480,7 @@ def get_items_ozon2(product_name, sort = "popular"):
         return items
     except:
         return []
-    
+@timeout(5)    
 def handle_ozon2(product_name, sorting):
     #привод к общему виду
     items = get_items_ozon2(product_name, sorting)
