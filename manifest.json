@@ -7,7 +7,7 @@
   "declarativeNetRequest",
   "contextMenus"],
   "host_permissions": [
-    "https://127.0.0.1:5000/*","https://192.168.0.112:5000/*","https://192.168.0.106:5000/*"
+    "https://a408c7f9-c38a-418a-918a-27be5572a91a.eu.btunnel.co.in/*","https://192.168.0.112:5000/*","https://192.168.0.106:5000/*"
   ],
   "content_scripts": [
     {
