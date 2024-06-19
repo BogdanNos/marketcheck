@@ -1,4 +1,4 @@
-let currentUrl = location.href;
+let currentUrl =  location.href;
 let isRunning = false;
 let rule = {"wildberries.ru" : {"tag" : "detail", "selector" : 'h1[class="product-page__title"]'},
             "megamarket.ru" : {"tag" : "details", "selector" : 'h1[itemprop="name"]'},
@@ -110,21 +110,30 @@ more_8216481.addEventListener('mouseleave', function() {
 });
 }
 window.addEventListener("load", function(){
-    console.log(currentUrl);
     runExtension();
+   
     window.navigation.addEventListener("navigate", (event) => {
-        console.log(currentUrl);
-        if (location.href !== currentUrl){   
-            currentUrl = location.href;
-            if (document.querySelector("#market-check-extension") || document.querySelector("#market-check-extension-closed")){
+            currentUrl =  event.destination.url
+            
+            if (document.querySelector("#market-check-extension")  ){
+                console.log("абоба1");
                 document.getElementById("market-check-extension").remove();
+            }
+            if(document.querySelector("#market-check-extension-closed") ){
+                console.log("абоба2");
                 document.getElementById("market-check-extension-closed").remove();
+            }
+            if(document.querySelector("#market-check-extension-loading") ){
+                console.log("абоба3");
+                document.getElementById("market-check-extension-loading").remove();
             }
             if (currentUrl.includes(rule[domain]["tag"])){
                 console.log("PREANADNSDNAS");
                 runExtension();
             } 
-        }
+
+            
+            
     })
 });
 /*window.addEventListener("load", function(){
@@ -158,22 +167,30 @@ function runExtension(){
     const body = document.body;
     const location = window.location.href;
     let name = "";
+    let isLoading = true;
+    
     
     if (location.includes(domain) && location.includes(rule[domain]["tag"])){
         isRunning = true;
         onElementAvailable(rule[domain]["selector"], () => {
             name = document.querySelector(rule[domain]["selector"]).textContent;
             console.log(name)
+            console.log(document.querySelector("#market-check-extension-loading"))
+            if (document.querySelector("#market-check-extension-loading")==null){
+                body.insertAdjacentHTML('afterbegin', CreateLoadPage());   
+            }
        
             let url = `https://192.168.0.112:5000/get_item?product_name=${name.replaceAll('"','')}`;
             //let url = `https://192.168.0.107:5000/test`;
             //w1indow.open(url, '_blank');
-
+            
             fetch(url).then(function(response) {
+
                 console.log(response)
                 return response.json();
             }).then((data) => {
                 console.log(data)
+                isLoading=false
                 var dataFilter=JSON.parse(JSON.stringify(data));
 
                 for (let i = 3; i >= 0; i--) {
@@ -187,10 +204,14 @@ function runExtension(){
                     }
                 
                 }
-
+                document.getElementById("market-check-extension-loading").remove();
                 console.log(dataFilter)
-                body.insertAdjacentHTML('afterbegin', CreateWebPage(dataFilter));
-                body.insertAdjacentHTML('afterbegin', CreateClosePage(data.best["price"], data.best["popular"]));
+                if (document.querySelector("#market-check-extension")==null){
+                    body.insertAdjacentHTML('afterbegin', CreateWebPage(dataFilter));
+                }
+                if (document.querySelector("#market-check-extension-closed")==null){
+                    body.insertAdjacentHTML('afterbegin', CreateClosePage(data.best["price"], data.best["popular"]));
+                }
                 //body.insertAdjacentHTML('afterbegin', generateHtml(name, data));
             }).catch((e) => {
                 console.error('Error: ' + e.message);
@@ -199,6 +220,7 @@ function runExtension(){
             
         });
         onElementAvailable('div[id="market-check-extension"]', () => {
+            
             document.getElementById("closeModal").onclick = function(){
                 enable_closed();
             }
@@ -230,8 +252,9 @@ function runExtension(){
 
 //Функция ожидания загрузки элемента
 function onElementAvailable(selector, callback) {
+    
     const observer = new MutationObserver(mutations => {
-         
+
       if (document.querySelector(selector)) {
         observer.disconnect();
         callback();
